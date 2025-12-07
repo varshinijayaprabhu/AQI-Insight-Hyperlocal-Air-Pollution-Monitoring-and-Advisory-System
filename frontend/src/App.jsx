@@ -20,6 +20,61 @@ import pengConcerned from "./assets/peng_concerned.gif";
 import pengSick from "./assets/peng_sick.gif";
 import pengVerySick from "./assets/peng_very_sick.gif";
 import pengDead from "./assets/peng_dead.gif";
+import NewsFeed from "./NewsFeed.jsx";
+import HistoryAnalytics from "./HistoryAnalytics.jsx";
+
+function NewsWrapper({ onBack }) {
+  return (
+    <div
+      style={{
+        background: "transparent",
+        color: "white",
+        height: "100vh",
+        overflowY: "auto",
+        position: "relative",
+      }}
+    >
+      <button
+        onClick={onBack}
+        style={{
+          position: "fixed",
+          top: "15px",
+          left: "15px",
+          zIndex: 100,
+          padding: "10px 18px",
+          background: "#2563eb",
+          color: "white",
+          borderRadius: "10px",
+          border: "none",
+          cursor: "pointer",
+          fontWeight: "600",
+        }}
+      >
+        ⬅ Back
+      </button>
+
+      <NewsFeed />
+    </div>
+  );
+  <div style={{ display: "grid", gap: 4 }}>
+    {item.bullets?.map((point, j) => (
+      <div
+        key={j}
+        style={{
+          display: "flex",
+          gap: 6,
+          alignItems: "flex-start",
+          color: "rgba(255,255,255,0.78)",
+          fontSize: 12,
+          lineHeight: 1.35,
+        }}
+      >
+        <span style={{ color: "#a855f7" }}>•</span>
+        <span>{point}</span>
+      </div>
+    ))}
+  </div>;
+}
 
 /* =========================
    MAP THEMES
@@ -53,6 +108,17 @@ const THEME_LABELS = {
    GLOBAL CSS
    ========================= */
 const globalStyles = `
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
 @keyframes flowGradient {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -446,6 +512,7 @@ function AnimatedAqiBar({ aqi }) {
    Note: only change is gauge removal — rest is same.
    Replace the gauge container's content to show AnimatedAqiBar.
 */
+
 export default function App() {
   const panelRef = useRef(null);
   const [mapTheme, setMapTheme] = useState("satellite");
@@ -456,6 +523,92 @@ export default function App() {
   const [message, setMessage] = useState(null);
   const [messageTop, setMessageTop] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [showNews, setShowNews] = useState(false);
+  const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+  const [showFeaturesPanel, setShowFeaturesPanel] = useState(false);
+
+  const featureList = [
+    {
+      icon: "📍",
+      title: "Hyperlocal AQI",
+      desc: "Tap any point on the map or use search to get live AQI with smart fallbacks.",
+      bullets: [
+        "Geocode search + map click fetch",
+        "Live OpenWeather + cached/India grid fallbacks",
+        "Snackbar updates for success/errors",
+      ],
+    },
+    {
+      icon: "🔥",
+      title: "Heatmap Overlay",
+      desc: "Toggle a smooth AQI heatmap generated from backend analytics.",
+      bullets: [
+        "Backend-generated smooth grid",
+        "Bounds-aware fetching to save bandwidth",
+        "Adjustable theme-friendly overlay",
+      ],
+    },
+    {
+      icon: "🌈",
+      title: "Map Themes",
+      desc: "Switch between satellite, dark, light, neon, and terrain basemaps.",
+      bullets: [
+        "One-tap theme toggle",
+        "High-contrast neon/dark options",
+        "Terrain layer for outdoor planning",
+      ],
+    },
+    {
+      icon: "🧪",
+      title: "Pollutant Breakdown",
+      desc: "View PM2.5, PM10, CO, NO₂, SO₂, O₃ details alongside AQI.",
+      bullets: [
+        "Component-level readings",
+        "AQI category + color coding",
+        "Animated AQI bar for quick glance",
+      ],
+    },
+    {
+      icon: "🤖",
+      title: "Future Outlook",
+      desc: "Forecast card with actions, penguin status, and smoking-equivalent exposure.",
+      bullets: [
+        "Current vs next-24h AQI",
+        "Health advice + key actions",
+        "Penguin mood + cigarette equivalence",
+      ],
+    },
+    {
+      icon: "📅",
+      title: "AQI Calendar",
+      desc: "Month view with color-coded days, hover hints, and current-day highlight.",
+      bullets: [
+        "AQI-colored day cells",
+        "Hover zoom + current-day ring",
+        "Compact legend for levels",
+      ],
+    },
+    {
+      icon: "📰",
+      title: "Climate News",
+      desc: "Curated AQI/climate headlines with immersive video backdrop.",
+      bullets: [
+        "Last-7-day AQI/climate stories",
+        "Fullscreen video background",
+        "Hover-lift news cards",
+      ],
+    },
+    {
+      icon: "🔔",
+      title: "Smart Notices",
+      desc: "Inline toast for searches, geolocation, and status updates.",
+      bullets: [
+        "Inline toasts for events",
+        "Auto-dismiss with timers",
+        "Responsive positioning near panel",
+      ],
+    },
+  ];
 
   function showMessage(text) {
     setMessage(text);
@@ -627,11 +780,8 @@ export default function App() {
     return (
       <div
         style={{
-          position: "absolute",
-          left: 20,
-          bottom: 80,
+          position: "static",
           width: 350,
-          zIndex: 9990,
           borderRadius: 14,
           background: "rgba(10,12,16,0.96)",
           color: "white",
@@ -639,6 +789,8 @@ export default function App() {
           boxShadow: "0 12px 36px rgba(0,0,0,0.45)",
           animation: "slideInUp 0.25s ease",
           border: "1px solid rgba(255,255,255,0.05)",
+          pointerEvents: "auto",
+          margin: "20px",
         }}
       >
         {/* Animated AQI BAR (TOP) — FIXED SPACING + NO WHITE SPOT */}
@@ -776,25 +928,6 @@ export default function App() {
               }}
             />
           </div>
-
-          {/* Scale labels */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginTop: 6,
-              fontSize: 12,
-              color: "rgba(255,255,255,0.75)",
-            }}
-          >
-            <div>0</div>
-            <div>50</div>
-            <div>100</div>
-            <div>150</div>
-            <div>200</div>
-            <div>300</div>
-            <div>301+</div>
-          </div>
         </div>
       </div>
     );
@@ -819,7 +952,7 @@ export default function App() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(5, 1fr)",
-            gap: 10,
+            gap: 8,
             padding: 8,
             background: "rgba(255,255,255,0.06)",
             borderRadius: 14,
@@ -833,12 +966,16 @@ export default function App() {
               <div
                 key={theme}
                 onClick={() => setMapTheme(theme)}
-                style={{ textAlign: "center", cursor: "pointer" }}
+                style={{
+                  textAlign: "center",
+                  cursor: "pointer",
+                  minWidth: 0,
+                }}
               >
                 <div
                   style={{
-                    width: 46,
-                    height: 46,
+                    width: 40,
+                    height: 40,
                     borderRadius: "50%",
                     background: isActive
                       ? "rgba(255,255,255,0.25)"
@@ -846,7 +983,7 @@ export default function App() {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    fontSize: 22,
+                    fontSize: 20,
                     margin: "0 auto",
                     border: isActive
                       ? "2px solid rgba(255,255,255,0.9)"
@@ -854,7 +991,7 @@ export default function App() {
                     boxShadow: isActive
                       ? "0 0 12px rgba(255,255,255,0.8)"
                       : "none",
-                    transform: isActive ? "scale(1.1)" : "scale(1.0)",
+                    transform: isActive ? "scale(1.05)" : "scale(1.0)",
                     transition: "0.2s",
                   }}
                 >
@@ -862,9 +999,12 @@ export default function App() {
                 </div>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 9,
                     marginTop: 4,
                     color: isActive ? "white" : "rgba(255,255,255,0.6)",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 >
                   {THEME_LABELS[theme]}
@@ -881,188 +1021,576 @@ export default function App() {
       MAIN UI
      ========================= */
   return (
-    <div style={{ width: "100vw", height: "100vh", position: "relative" }}>
-      {/* FLOATING PANEL */}
-      <div
-        ref={panelRef}
-        style={{
-          position: "absolute",
-          top: 18,
-          right: 18,
-          width: 300,
-          padding: 16,
-          zIndex: 9999,
-          borderRadius: 20,
-          background: "rgba(20,20,28,0.94)",
-          backdropFilter: "blur(12px)",
-          boxShadow: "0 12px 30px rgba(0,0,0,0.45)",
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-          alignItems: "center",
-        }}
-      >
-        {/* Banner */}
+    <>
+      {showNews ? (
+        /* =============================
+         NEWS PAGE
+      ==============================*/
         <div
           style={{
-            width: "100%",
-            height: 140,
-            overflow: "hidden",
-            borderRadius: 12,
-            background: "rgba(255,255,255,0.04)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <img
-            src={searchGif}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              objectPosition: "center",
-              animation: "floatInAir 3s ease-in-out infinite",
-            }}
-          />
-        </div>
-
-        {/* SEARCH */}
-        <div style={{ width: "100%", position: "relative" }}>
-          <span
-            style={{
-              position: "absolute",
-              left: 10,
-              top: "50%",
-              transform: "translateY(-50%)",
-              fontSize: 18,
-            }}
-          >
-            🔍
-          </span>
-
-          <input
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder={isSearching ? "Searching…" : "Search place…"}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            style={{
-              width: "100%",
-              padding: "10px 40px 10px 36px",
-              borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "rgba(22,30,48,0.85)",
-              color: "white",
-              outline: "none",
-              boxSizing: "border-box",
-            }}
-          />
-
-          <button
-            onClick={handleCurrentLocationClick}
-            style={{
-              position: "absolute",
-              right: 6,
-              top: "50%",
-              transform: "translateY(-50%)",
-              padding: "4px 8px",
-              borderRadius: "50%",
-              border: "none",
-              background: "rgba(255,255,255,0.15)",
-              color: "white",
-              cursor: "pointer",
-              fontSize: 16,
-            }}
-          >
-            {"\u29BF"}
-          </button>
-        </div>
-
-        {/* BUTTONS */}
-        <div style={{ width: "100%", display: "flex", gap: 10 }}>
-          <button
-            onClick={handleSearch}
-            style={{ ...animatedButtonStyle, flex: 1 }}
-          >
-            {isSearching ? "Searching…" : "Search"}
-          </button>
-
-          <button
-            onClick={() => {
-              setHeatmapEnabled((v) => !v);
-              showMessage(heatmapEnabled ? "🧊 Heatmap off" : "🔥 Heatmap on");
-            }}
-            style={{
-              ...animatedButtonStyle,
-              flex: 1,
-              background: heatmapEnabled
-                ? "linear-gradient(270deg,#9333ea,#3b0764,#9333ea)"
-                : "linear-gradient(270deg,#3b82f6,#1e40af,#3b82f6)",
-            }}
-          >
-            {heatmapEnabled ? "Hide" : "Heatmap"}
-          </button>
-        </div>
-
-        {/* THEME PICKER */}
-        <ThemePicker />
-      </div>
-
-      {/* MESSAGE POPUP */}
-      {message && (
-        <div
-          style={{
-            position: "absolute",
-            top: messageTop ?? 350,
-            right: 18,
-            width: 300,
-            zIndex: 9999,
-            borderRadius: 12,
-            background: "rgba(15,20,30,0.95)",
+            width: "100vw",
+            minHeight: "100vh",
+            background: "linear-gradient(180deg, #0d0d0d, #1a1a1a)",
+            padding: "20px 30px",
             color: "white",
-            boxShadow: "0 10px 28px rgba(0,0,0,0.45)",
-            padding: "10px 12px",
-            display: "flex",
-            gap: 10,
-            alignItems: "center",
-            animation: "fadeInOut 10s ease forwards",
-            border: "1px solid rgba(255,255,255,0.05)",
+            overflowY: "auto",
+            boxSizing: "border-box",
+            position: "relative",
           }}
         >
-          <img
-            src={msgGif}
-            style={{ width: 40, height: 40, borderRadius: 8 }}
-          />
-          <div style={{ fontSize: 14 }}>{message}</div>
+          {/* TOP-RIGHT BUTTONS */}
+          <div
+            style={{
+              position: "absolute",
+              top: "20px",
+              right: "30px",
+              display: "flex",
+              gap: "12px",
+              zIndex: 1000,
+            }}
+          >
+            {/* MAP BUTTON */}
+            <button
+              onClick={() => setShowNews(false)}
+              style={{
+                padding: "10px 18px",
+                background: "#2563eb",
+                color: "white",
+                borderRadius: "10px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "600",
+                boxShadow: "0px 4px 12px rgba(0,0,0,0.4)",
+                transition: "0.2s",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform = "scale(1.05)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform = "scale(1)")
+              }
+            >
+              🗺 Map
+            </button>
+
+            {/* FEATURES BUTTON */}
+            <button
+              onClick={() => setShowFeaturesPanel(true)}
+              style={{
+                padding: "10px 18px",
+                background: "#9333ea",
+                color: "white",
+                borderRadius: "10px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "600",
+                boxShadow: "0px 4px 12px rgba(0,0,0,0.4)",
+                transition: "0.2s",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform = "scale(1.05)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform = "scale(1)")
+              }
+            >
+              ⭐ Features
+            </button>
+          </div>
+
+          {/* News Feed */}
+          <div style={{ marginTop: "80px" }}>
+            <NewsFeed />
+          </div>
+
+          {/* Features Overlay */}
+          {showFeaturesPanel && (
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.55)",
+                backdropFilter: "blur(10px)",
+                zIndex: 2000,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: "20px",
+              }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  width: "min(960px, 95vw)",
+                  maxHeight: "85vh",
+                  overflowY: "auto",
+                  background:
+                    "linear-gradient(160deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95))",
+                  border: "1px solid rgba(147,51,234,0.35)",
+                  boxShadow: "0 20px 50px rgba(0,0,0,0.55)",
+                  borderRadius: 16,
+                  padding: 22,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 14,
+                  }}
+                >
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 26,
+                        fontWeight: 800,
+                        color: "white",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      🚀 Application Features
+                    </div>
+                    <div
+                      style={{
+                        color: "rgba(255,255,255,0.7)",
+                        fontSize: 13,
+                        marginTop: 4,
+                      }}
+                    >
+                      Everything packed into your AQI & climate experience.
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowFeaturesPanel(false)}
+                    style={{
+                      background: "rgba(255,255,255,0.08)",
+                      color: "white",
+                      border: "1px solid rgba(255,255,255,0.15)",
+                      borderRadius: 10,
+                      padding: "8px 12px",
+                      cursor: "pointer",
+                      fontWeight: 700,
+                    }}
+                  >
+                    ✕ Close
+                  </button>
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                    gap: 14,
+                  }}
+                >
+                  {featureList.map((item, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        background: "rgba(255,255,255,0.08)",
+                        borderRadius: 16,
+                        padding: 16,
+                        border: "1px solid rgba(255,255,255,0.12)",
+                        boxShadow: "0 10px 24px rgba(0,0,0,0.45)",
+                        display: "flex",
+                        gap: 12,
+                        alignItems: "flex-start",
+                        transition:
+                          "transform 0.22s ease, box-shadow 0.22s ease",
+                        cursor: "default",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform =
+                          "translateY(-6px) scale(1.01)";
+                        e.currentTarget.style.boxShadow =
+                          "0 14px 28px rgba(0,0,0,0.55)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform =
+                          "translateY(0) scale(1)";
+                        e.currentTarget.style.boxShadow =
+                          "0 10px 24px rgba(0,0,0,0.45)";
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 20,
+                          width: 36,
+                          height: 36,
+                          borderRadius: 10,
+                          display: "grid",
+                          placeItems: "center",
+                          background: "rgba(147,51,234,0.15)",
+                          border: "1px solid rgba(147,51,234,0.4)",
+                        }}
+                      >
+                        {item.icon}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div
+                          style={{
+                            color: "#ffffff",
+                            fontSize: 15,
+                            fontWeight: 700,
+                            marginBottom: 6,
+                          }}
+                        >
+                          {item.title}
+                        </div>
+                        <div
+                          style={{
+                            color: "rgba(255,255,255,0.82)",
+                            fontSize: 13,
+                            lineHeight: 1.4,
+                            marginBottom: 8,
+                          }}
+                        >
+                          {item.desc}
+                        </div>
+                        <div style={{ display: "grid", gap: 4 }}>
+                          {item.bullets?.map((point, j) => (
+                            <div
+                              key={j}
+                              style={{
+                                display: "flex",
+                                gap: 6,
+                                alignItems: "flex-start",
+                                color: "rgba(255,255,255,0.78)",
+                                fontSize: 12,
+                                lineHeight: 1.35,
+                              }}
+                            >
+                              <span style={{ color: "#a855f7" }}>•</span>
+                              <span>{point}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* =============================
+         MAP PAGE (BANNER + SCROLLABLE ANALYTICS)
+      ==============================*/
+        <div
+          style={{
+            width: "100vw",
+            minHeight: "100vh",
+            position: "relative",
+            overflowY: "auto",
+            overflowX: "hidden",
+            background: "#000",
+          }}
+        >
+          {/* MAP BANNER - FIXED AT TOP */}
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              height: isMapFullscreen ? "100vh" : "60vh",
+              minHeight: isMapFullscreen ? "100vh" : "500px",
+              overflow: "hidden",
+              transition: "height 0.3s ease",
+              border: "none",
+              outline: "none",
+            }}
+          >
+            {/* FLOATING PANEL - FIXED WITHIN MAP BANNER */}
+            <div
+              ref={panelRef}
+              style={{
+                position: "absolute",
+                top: 5,
+                right: 18,
+                width: 300,
+                padding: 16,
+                zIndex: 9999,
+                borderRadius: 20,
+                background: "rgba(20,20,28,0.94)",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 12px 30px rgba(0,0,0,0.45)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                alignItems: "center",
+              }}
+            >
+              {/* Banner */}
+              <div
+                style={{
+                  width: "100%",
+                  height: 140,
+                  overflow: "hidden",
+                  borderRadius: 12,
+                  background: "rgba(255,255,255,0.04)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <img
+                  src={searchGif}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    objectPosition: "center",
+                    animation: "floatInAir 3s ease-in-out infinite",
+                  }}
+                />
+              </div>
+
+              {/* SEARCH */}
+              <div style={{ width: "100%", position: "relative" }}>
+                <span
+                  style={{
+                    position: "absolute",
+                    left: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    fontSize: 18,
+                  }}
+                >
+                  🔍
+                </span>
+
+                <input
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  placeholder={isSearching ? "Searching…" : "Search place…"}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  style={{
+                    width: "100%",
+                    padding: "10px 40px 10px 36px",
+                    borderRadius: 12,
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    background: "rgba(22,30,48,0.85)",
+                    color: "white",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+
+                <button
+                  onClick={handleCurrentLocationClick}
+                  style={{
+                    position: "absolute",
+                    right: 6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    padding: "4px 8px",
+                    borderRadius: "50%",
+                    border: "none",
+                    background: "rgba(255,255,255,0.15)",
+                    color: "white",
+                    cursor: "pointer",
+                    fontSize: 16,
+                  }}
+                >
+                  {"\u29BF"}
+                </button>
+              </div>
+
+              {/* BUTTONS */}
+              <div style={{ width: "100%", display: "flex", gap: 10 }}>
+                <button
+                  onClick={handleSearch}
+                  style={{ ...animatedButtonStyle, flex: 1 }}
+                >
+                  {isSearching ? "Searching…" : "Search"}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setHeatmapEnabled((v) => !v);
+                    showMessage(
+                      heatmapEnabled ? "🧊 Heatmap off" : "🔥 Heatmap on"
+                    );
+                  }}
+                  style={{
+                    ...animatedButtonStyle,
+                    flex: 1,
+                    background: heatmapEnabled
+                      ? "linear-gradient(270deg,#9333ea,#3b0764,#9333ea)"
+                      : "linear-gradient(270deg,#3b82f6,#1e40af,#3b82f6)",
+                  }}
+                >
+                  {heatmapEnabled ? "Hide" : "Heatmap"}
+                </button>
+
+                {/* NEWS BUTTON */}
+                <button
+                  onClick={() => setShowNews(true)}
+                  style={{
+                    ...animatedButtonStyle,
+                    flex: 1,
+                    background:
+                      "linear-gradient(270deg,#9333ea,#3b0764,#9333ea)",
+                  }}
+                >
+                  News
+                </button>
+              </div>
+
+              {/* THEME PICKER */}
+              <ThemePicker />
+
+              {/* FULLSCREEN TOGGLE BUTTON */}
+              <button
+                onClick={() => setIsMapFullscreen(!isMapFullscreen)}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  background: isMapFullscreen
+                    ? "linear-gradient(270deg,#dc2626,#991b1b,#dc2626)"
+                    : "linear-gradient(270deg,#2563eb,#1e3a8a,#2563eb)",
+                  backgroundSize: "600% 600%",
+                  animation: "flowGradient 6s ease infinite",
+                  color: "white",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: 12,
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: 14,
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.3)",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "scale(1.02)";
+                  e.currentTarget.style.boxShadow =
+                    "0 10px 25px rgba(0,0,0,0.4)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.boxShadow =
+                    "0 8px 20px rgba(0,0,0,0.3)";
+                }}
+              >
+                {isMapFullscreen ? "⬇ Exit Fullscreen" : "⬆ Fullscreen Map"}
+              </button>
+
+              {/* MESSAGE POPUP - BELOW SEARCH CARD */}
+              {message && (
+                <div
+                  style={{
+                    marginTop: 2,
+                    width: "100%",
+                    borderRadius: 10,
+                    background: "rgba(20,20,28,0.85)",
+                    color: "white",
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.4)",
+                    padding: "6px 10px",
+                    display: "flex",
+                    gap: 6,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "2px solid rgba(99, 102, 241, 0.5)",
+                    backdropFilter: "blur(10px)",
+                  }}
+                >
+                  <img
+                    src={msgGif}
+                    style={{ width: 28, height: 28, borderRadius: 6 }}
+                  />
+                  <div style={{ fontSize: 12, fontWeight: "500" }}>
+                    {message}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* AQI CARD - WITHIN MAP BANNER */}
+            <div
+              style={{ position: "absolute", left: 0, bottom: 0, zIndex: 9990 }}
+            >
+              <AQICard data={aqiData} />
+            </div>
+
+            {/* MAP CONTAINER */}
+            <MapContainer
+              center={[20.5937, 78.9629]}
+              zoom={5}
+              style={{
+                width: "100%",
+                height: "100%",
+                pointerEvents: "auto",
+                cursor: "grab",
+              }}
+              scrollWheelZoom={isMapFullscreen}
+              dragging={true}
+              zoomControl={true}
+              doubleClickZoom={true}
+            >
+              <TileLayer url={MAP_THEMES[mapTheme]} />
+
+              <ClickFetcher
+                onResult={({ lat, lon, aqiResult }) => {
+                  setMarkerPos([lat, lon]);
+                  setAqiData(aqiResult);
+                  showMessage("📍 Location clicked");
+                }}
+              />
+
+              <SmoothHeatmap
+                enabled={heatmapEnabled}
+                onError={(e) => showMessage(e)}
+              />
+
+              {markerPos && <Marker position={markerPos} />}
+            </MapContainer>
+          </div>
+
+          {/* ---------- AQI HISTORY ANALYTICS SECTION (Scrollable) ---------- */}
+          <div
+            style={{
+              width: "100%",
+              background: "#000",
+              backdropFilter: "blur(8px)",
+              padding: "60px 20px 60px",
+              boxSizing: "border-box",
+              borderTop: "none",
+              position: "relative",
+              zIndex: 1,
+              marginTop: 0,
+            }}
+          >
+            <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+              {aqiData && aqiData.latitude && aqiData.longitude ? (
+                <HistoryAnalytics
+                  lat={markerPos ? markerPos[0] : aqiData.latitude}
+                  lon={markerPos ? markerPos[1] : aqiData.longitude}
+                  days={30}
+                  rolling_window={5}
+                />
+              ) : (
+                <>
+                  <h2
+                    style={{
+                      color: "white",
+                      textAlign: "center",
+                      marginBottom: 20,
+                    }}
+                  >
+                    📊 India AQI Analytics Overview
+                  </h2>
+                  <HistoryAnalytics
+                    lat={22.5937}
+                    lon={78.9629}
+                    days={30}
+                    rolling_window={5}
+                  />
+                </>
+              )}
+            </div>
+          </div>
         </div>
       )}
-
-      {/* AQI CARD */}
-      <AQICard data={aqiData} />
-
-      {/* MAP */}
-      <MapContainer
-        center={[20.5937, 78.9629]}
-        zoom={5}
-        style={{ width: "100%", height: "100%" }}
-      >
-        <TileLayer url={MAP_THEMES[mapTheme]} />
-
-        <ClickFetcher
-          onResult={({ lat, lon, aqiResult }) => {
-            setMarkerPos([lat, lon]);
-            setAqiData(aqiResult);
-            showMessage("📍 Location clicked");
-          }}
-        />
-
-        <SmoothHeatmap
-          enabled={heatmapEnabled}
-          onError={(e) => showMessage(e)}
-        />
-
-        {markerPos && <Marker position={markerPos} />}
-      </MapContainer>
-    </div>
+    </>
   );
 }
