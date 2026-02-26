@@ -977,7 +977,7 @@ function LineChart({ data, dataKey, label, color, height = 250 }) {
           {Math.ceil(
             (new Date(dataPoints[dataPoints.length - 1].timestamp) -
               new Date(dataPoints[0].timestamp)) /
-              (1000 * 60 * 60 * 24)
+              (1000 * 60 * 60 * 24),
           )}{" "}
           days
         </div>
@@ -1019,13 +1019,13 @@ export default function HistoryAnalytics({
       try {
         const [tsRes, dailyRes, sumRes] = await Promise.all([
           fetch(
-            `http://127.0.0.1:8000/aqi/history/timeseries?lat=${lat}&lon=${lon}&days=${days}&rolling_window=${rolling_window}&radius_km=${radius_km}`
+            `${import.meta.env.VITE_API_BASE}/aqi/history/timeseries?lat=${lat}&lon=${lon}&days=${days}&rolling_window=${rolling_window}&radius_km=${radius_km}`,
           ),
           fetch(
-            `http://127.0.0.1:8000/aqi/history/daily?lat=${lat}&lon=${lon}&days=${days}&radius_km=${radius_km}`
+            `${import.meta.env.VITE_API_BASE}/aqi/history/daily?lat=${lat}&lon=${lon}&days=${days}&radius_km=${radius_km}`,
           ),
           fetch(
-            `http://127.0.0.1:8000/aqi/history/summary?lat=${lat}&lon=${lon}&days=${days}&radius_km=${radius_km}`
+            `${import.meta.env.VITE_API_BASE}/aqi/history/summary?lat=${lat}&lon=${lon}&days=${days}&radius_km=${radius_km}`,
           ),
         ]);
 
@@ -1048,7 +1048,7 @@ export default function HistoryAnalytics({
           setDaily(daily_data.daily || []);
           setSummary(sum.summary || null);
           setDataSource(
-            ts.source || daily_data.source || sum.source || "unknown"
+            ts.source || daily_data.source || sum.source || "unknown",
           );
 
           console.log("✅ State updated:", {
@@ -1398,8 +1398,8 @@ function FuturePrediction({ series, summary }) {
     trend === "increasing"
       ? "#F87171"
       : trend === "decreasing"
-      ? "#4ADE80"
-      : "#FCD34D";
+        ? "#4ADE80"
+        : "#FCD34D";
   const trendIcon =
     trend === "increasing" ? "📈" : trend === "decreasing" ? "📉" : "➡️";
 

@@ -9,6 +9,7 @@ import os
 from dotenv import load_dotenv
 from database import get_connection
 from analytics import router as analytics_router
+from aqi_utils import compute_aqi_for_row
 
 # Load .env
 load_dotenv()
@@ -171,14 +172,33 @@ def fetch_owm(lat, lon):
         comp = record.get("components", {})
         idx = record.get("main", {}).get("aqi")
 
+        pm25 = comp.get("pm2_5")
+        pm10 = comp.get("pm10")
+        no2 = comp.get("no2")
+        so2 = comp.get("so2")
+        o3 = comp.get("o3")
+        co = comp.get("co")
+
+        # Compute AQI from concentrations so the UI shows actual AQI, not a 1-5 index
+        aqi_calc = compute_aqi_for_row(
+            {
+                "pm25": pm25,
+                "pm10": pm10,
+                "no2": no2,
+                "so2": so2,
+                "o3": o3,
+                "co": (co / 1000.0) if co is not None else None,
+            }
+        )
+
         return {
-            "aqi": owm_aqi_to_numeric(idx),
-            "pm25": comp.get("pm2_5"),
-            "pm10": comp.get("pm10"),
-            "co": comp.get("co"),
-            "no2": comp.get("no2"),
-            "so2": comp.get("so2"),
-            "o3": comp.get("o3"),
+            "aqi": aqi_calc.get("aqi") if aqi_calc else None,
+            "pm25": pm25,
+            "pm10": pm10,
+            "co": co,
+            "no2": no2,
+            "so2": so2,
+            "o3": o3,
             "raw_aqi_index": idx,
             "fetched_at": datetime.now(timezone.utc).isoformat()
         }

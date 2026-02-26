@@ -141,7 +141,7 @@ html, body {
 }
 `;
 document.head.appendChild(
-  Object.assign(document.createElement("style"), { innerHTML: globalStyles })
+  Object.assign(document.createElement("style"), { innerHTML: globalStyles }),
 );
 
 /* =========================
@@ -236,7 +236,7 @@ function SmoothHeatmap({ enabled, onError }) {
       const sw = bounds.getSouthWest();
       const ne = bounds.getNorthEast();
 
-      const url = `http://127.0.0.1:8000/aqi/heatmap/smooth?lat1=${sw.lat}&lon1=${sw.lng}&lat2=${ne.lat}&lon2=${ne.lng}&sample_grid=5&out_res=120`;
+      const url = `${import.meta.env.VITE_API_BASE}/aqi/heatmap/smooth?lat1=${sw.lat}&lon1=${sw.lng}&lat2=${ne.lat}&lon2=${ne.lng}&sample_grid=5&out_res=120`;
 
       try {
         if (abortRef.current) abortRef.current.abort();
@@ -274,7 +274,7 @@ function SmoothHeatmap({ enabled, onError }) {
         if (err.name !== "AbortError") onError(err.message);
       }
     },
-    [enabled]
+    [enabled],
   );
 
   useEffect(() => {
@@ -298,7 +298,7 @@ function ClickFetcher({ onResult }) {
 
       try {
         const res = await fetch(
-          `http://127.0.0.1:8000/aqi/coords?lat=${lat}&lon=${lng}`
+          `${import.meta.env.VITE_API_BASE}/aqi/coords?lat=${lat}&lon=${lng}`,
         );
         const json = await res.json();
 
@@ -434,9 +434,22 @@ function CuteGauge({ aqi }) {
    - It shows a gradient fill and a white pointer that animates to AQI
 */
 function AnimatedAqiBar({ aqi }) {
-  const maxAQI = 400;
-  const safe = Math.max(0, Math.min(Number(aqi) || 0, maxAQI));
-  const pct = (safe / maxAQI) * 100;
+  // Piecewise-linear mapping so the pointer aligns with the labels
+  // Labels:  0   50   100   150   200   300   301+
+  // Each gap between labels occupies an equal 1/6 of the bar width.
+  const breakpoints = [0, 50, 100, 150, 200, 300, 400]; // AQI values
+  const segments = breakpoints.length - 1; // 6 segments
+  const val = Math.max(0, Math.min(Number(aqi) || 0, 400));
+
+  let pct = 100;
+  for (let i = 0; i < segments; i++) {
+    const lo = breakpoints[i],
+      hi = breakpoints[i + 1];
+    if (val <= hi) {
+      pct = ((i + (val - lo) / (hi - lo)) / segments) * 100;
+      break;
+    }
+  }
 
   const gradient =
     "linear-gradient(90deg,#00E400,#FFFF00,#FF7E00,#FF0000,#8F3F97,#7E0018)";
@@ -629,7 +642,7 @@ export default function App() {
         const lon = pos.coords.longitude;
         try {
           const res = await fetch(
-            `http://127.0.0.1:8000/aqi/coords?lat=${lat}&lon=${lon}`
+            `${import.meta.env.VITE_API_BASE}/aqi/coords?lat=${lat}&lon=${lon}`,
           );
           const json = await res.json();
           setMarkerPos([lat, lon]);
@@ -639,7 +652,7 @@ export default function App() {
           loadIndiaDefault();
         }
       },
-      () => loadIndiaDefault()
+      () => loadIndiaDefault(),
     );
 
     const onResize = () => {
@@ -657,7 +670,7 @@ export default function App() {
     const lat = 22.5937,
       lon = 78.9629;
     const res = await fetch(
-      `http://127.0.0.1:8000/aqi/coords?lat=${lat}&lon=${lon}`
+      `${import.meta.env.VITE_API_BASE}/aqi/coords?lat=${lat}&lon=${lon}`,
     );
     const json = await res.json();
     setMarkerPos([lat, lon]);
@@ -674,9 +687,9 @@ export default function App() {
 
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/aqi/location?place=${encodeURIComponent(
-          searchText
-        )}&country=India`
+        `${import.meta.env.VITE_API_BASE}/aqi/location?place=${encodeURIComponent(
+          searchText,
+        )}&country=India`,
       );
       const json = await res.json();
 
@@ -698,7 +711,7 @@ export default function App() {
         const lon = pos.coords.longitude;
 
         const res = await fetch(
-          `http://127.0.0.1:8000/aqi/coords?lat=${lat}&lon=${lon}`
+          `${import.meta.env.VITE_API_BASE}/aqi/coords?lat=${lat}&lon=${lon}`,
         );
         const json = await res.json();
 
@@ -706,7 +719,7 @@ export default function App() {
         setAqiData(json);
         showMessage("📍 Location updated");
       },
-      () => showMessage("🚫 Location permission denied")
+      () => showMessage("🚫 Location permission denied"),
     );
   }
 
@@ -1410,7 +1423,7 @@ export default function App() {
                   onClick={() => {
                     setHeatmapEnabled((v) => !v);
                     showMessage(
-                      heatmapEnabled ? "🧊 Heatmap off" : "🔥 Heatmap on"
+                      heatmapEnabled ? "🧊 Heatmap off" : "🔥 Heatmap on",
                     );
                   }}
                   style={{
