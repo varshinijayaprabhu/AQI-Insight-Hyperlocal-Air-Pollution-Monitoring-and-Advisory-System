@@ -3,8 +3,12 @@ import requests
 import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+# Load .env from backend directory
+env_path = Path(__file__).parent / ".env"
+load_dotenv(dotenv_path=env_path)
+
 GNEWS_API_KEY = os.getenv("GNEWS_API_KEY")
 
 def fetch_news(days_back=30, max_articles=20):

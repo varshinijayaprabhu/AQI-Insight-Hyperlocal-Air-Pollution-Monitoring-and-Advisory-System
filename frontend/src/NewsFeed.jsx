@@ -18,9 +18,11 @@ const NewsFeed = () => {
 
   useEffect(() => {
     const url = `${API_BASE}/api/news?days=30&limit=20`;
+    console.log("🔗 Fetching news from:", url);
 
     fetch(url)
       .then((res) => {
+        console.log("📡 Response status:", res.status, res.statusText);
         if (!res.ok) {
           throw new Error(`HTTP error! Status: ${res.status}`);
         }
@@ -35,7 +37,7 @@ const NewsFeed = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("❌ Failed to fetch news:", err);
+        console.error("❌ Failed to fetch news from", url, ":", err);
         setLoading(false);
       });
   }, []);
