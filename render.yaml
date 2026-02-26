@@ -25,10 +25,8 @@ services:
           property: connectionString
 
   # ── React Frontend (Static Site) ──
-  - type: web
+  - type: static
     name: aqi-frontend
-    runtime: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
