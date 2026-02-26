@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from database import get_connection
 from analytics import router as analytics_router
 from aqi_utils import compute_aqi_for_row
+from news_fetcher import fetch_news
 
 # Load .env
 load_dotenv()
@@ -341,4 +342,27 @@ def heatmap(lat1: float, lon1: float, lat2: float, lon2: float,
         "grid_lats": np.linspace(min_lat, max_lat, out_res).tolist(),
         "grid_lons": np.linspace(min_lon, max_lon, out_res).tolist(),
         "grid_aqi": smoothed.tolist()
+    }
+
+
+# ============================================================
+# NEWS ENDPOINT — Fetch air quality & climate news
+# ============================================================
+@app.get("/api/news")
+def get_news(days: int = 30, limit: int = 20):
+    """
+    Fetch news articles about air quality and climate.
+    
+    Args:
+        days: Number of days to look back (default: 30)
+        limit: Maximum articles to return (default: 20)
+    
+    Returns:
+        List of news articles with title, description, URL, etc.
+    """
+    articles = fetch_news(days_back=days, max_articles=limit)
+    return {
+        "articles": articles,
+        "count": len(articles),
+        "source": "GNews API"
     }

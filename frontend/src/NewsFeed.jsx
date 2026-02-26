@@ -1,20 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 
-const API_KEY = import.meta.env.VITE_GNEWS_API_KEY;
+const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000";
 
 const NewsFeed = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const videoRef = useRef(null);
-
-  // LAST 7 DAYS
-  const today = new Date();
-  const lastWeek = new Date();
-  lastWeek.setDate(today.getDate() - 7);
-
-  const format = (d) => d.toISOString().split("T")[0];
-  const FROM = format(lastWeek);
-  const TO = format(today);
 
   useEffect(() => {
     // Force video play
@@ -26,21 +17,27 @@ const NewsFeed = () => {
   }, []);
 
   useEffect(() => {
-    if (!API_KEY) {
-      console.error("❌ Missing API key");
-      setLoading(false);
-      return;
-    }
-
-    const url = `https://gnews.io/api/v4/search?q=air+quality+OR+pollution+OR+climate&lang=en&from=${FROM}&to=${TO}&max=20&apikey=${API_KEY}`;
+    const url = `${API_BASE}/api/news?days=30&limit=20`;
 
     fetch(url)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
+        console.log("✅ News Data:", data);
+        if (!data.articles) {
+          console.error("❌ No articles found in response:", data);
+        }
         setArticles((data.articles || []).slice(0, 20));
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error("❌ Failed to fetch news:", err);
+        setLoading(false);
+      });
   }, []);
 
   if (loading)
@@ -140,94 +137,112 @@ const NewsFeed = () => {
         </h1>
 
         {/* News cards grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "25px",
-            width: "100%",
-            maxWidth: "1400px",
-            margin: "0 auto",
-          }}
-        >
-          {articles.map((a, i) => (
-            <div
-              key={i}
-              onClick={() => window.open(a.url, "_blank")}
-              style={{
-                cursor: "pointer",
-                background: "rgba(255,255,255,0.08)",
-                backdropFilter: "blur(12px)",
-                borderRadius: "16px",
-                overflow: "hidden",
-                boxShadow: "0 8px 18px rgba(0,0,0,0.5)",
-                transition: "0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform =
-                  "translateY(-10px) scale(1.03)";
-                e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,0,0,0.7)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0) scale(1)";
-                e.currentTarget.style.boxShadow = "0 8px 18px rgba(0,0,0,0.5)";
-              }}
-            >
-              {a.image && (
-                <img
-                  src={a.image}
-                  alt=""
-                  style={{
-                    width: "100%",
-                    height: "190px",
-                    objectFit: "cover",
-                  }}
-                />
-              )}
-
-              <div style={{ padding: "18px" }}>
-                <h2 style={{ fontSize: "20px", marginBottom: "10px" }}>
-                  {a.title}
-                </h2>
-
-                <p
-                  style={{
-                    color: "#ddd",
-                    fontSize: "14px",
-                    marginBottom: "12px",
-                  }}
-                >
-                  {(a.description || "").slice(0, 120)}...
-                </p>
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <span style={{ color: "#bbb", fontSize: "13px" }}>
-                    {a.source?.name}
-                  </span>
-
-                  <button
+        {articles.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px 20px",
+              color: "#aaa",
+              fontSize: "18px",
+            }}
+          >
+            <p>No news articles available at the moment.</p>
+            <p style={{ fontSize: "14px", marginTop: "10px" }}>
+              Please check back later or verify API connection.
+            </p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: "25px",
+              width: "100%",
+              maxWidth: "1400px",
+              margin: "0 auto",
+            }}
+          >
+            {articles.map((a, i) => (
+              <div
+                key={i}
+                onClick={() => window.open(a.url, "_blank")}
+                style={{
+                  cursor: "pointer",
+                  background: "rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(12px)",
+                  borderRadius: "16px",
+                  overflow: "hidden",
+                  boxShadow: "0 8px 18px rgba(0,0,0,0.5)",
+                  transition: "0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform =
+                    "translateY(-10px) scale(1.03)";
+                  e.currentTarget.style.boxShadow =
+                    "0 12px 28px rgba(0,0,0,0.7)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0) scale(1)";
+                  e.currentTarget.style.boxShadow =
+                    "0 8px 18px rgba(0,0,0,0.5)";
+                }}
+              >
+                {a.image && (
+                  <img
+                    src={a.image}
+                    alt=""
                     style={{
-                      padding: "6px 14px",
-                      borderRadius: "8px",
-                      border: "none",
-                      background: "#2563eb",
-                      color: "white",
-                      fontSize: "13px",
+                      width: "100%",
+                      height: "190px",
+                      objectFit: "cover",
+                    }}
+                  />
+                )}
+
+                <div style={{ padding: "18px" }}>
+                  <h2 style={{ fontSize: "20px", marginBottom: "10px" }}>
+                    {a.title}
+                  </h2>
+
+                  <p
+                    style={{
+                      color: "#ddd",
+                      fontSize: "14px",
+                      marginBottom: "12px",
                     }}
                   >
-                    Read More →
-                  </button>
+                    {(a.description || "").slice(0, 120)}...
+                  </p>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span style={{ color: "#bbb", fontSize: "13px" }}>
+                      {a.source?.name}
+                    </span>
+
+                    <button
+                      style={{
+                        padding: "6px 14px",
+                        borderRadius: "8px",
+                        border: "none",
+                        background: "#2563eb",
+                        color: "white",
+                        fontSize: "13px",
+                      }}
+                    >
+                      Read More →
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );
