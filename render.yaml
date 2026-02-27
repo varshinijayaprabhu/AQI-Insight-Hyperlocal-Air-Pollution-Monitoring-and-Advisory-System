@@ -9,7 +9,7 @@ databases:
     user: aqi_user
 
 services:
-  # ── FastAPI Backend ──
+  # ── FastAPI Backend (includes integrated scheduler) ──
   - type: web
     name: aqi-backend
     runtime: python
@@ -22,24 +22,6 @@ services:
         sync: false # You will set this manually in the Render dashboard
       - key: GNEWS_API_KEY
         sync: false # You will set this manually in the Render dashboard
-      - key: DATABASE_URL
-        fromDatabase:
-          name: aqi-postgres
-          property: connectionString
-
-  # ── India AQI Scheduler (Background Job) ──
-  - type: background_job
-    name: aqi-scheduler
-    runtime: python
-    plan: free
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: python india_scheduler.py
-    envVars:
-      - key: OWM_API_KEY
-        sync: false
-      - key: GNEWS_API_KEY
-        sync: false
       - key: DATABASE_URL
         fromDatabase:
           name: aqi-postgres
