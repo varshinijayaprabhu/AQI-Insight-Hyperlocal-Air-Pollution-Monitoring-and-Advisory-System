@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # How many days of data to keep (older records are auto-deleted)
-DATA_RETENTION_DAYS = 7
+DATA_RETENTION_DAYS = 30
 
 def get_connection():
     """
