@@ -14,15 +14,32 @@ def get_connection():
     or fall back to individual env vars / defaults for local dev.
     """
     database_url = os.getenv("DATABASE_URL")
+    
     if database_url:
-        return psycopg2.connect(database_url)
-    return psycopg2.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        port=int(os.getenv("DB_PORT", "5432")),
-        database=os.getenv("DB_NAME", "postgres"),
-        user=os.getenv("DB_USER", "postgres"),
-        password=os.getenv("DB_PASS", "Admin@123")
-    )
+        print(f"[DB] Connecting via DATABASE_URL...")
+        try:
+            conn = psycopg2.connect(database_url)
+            print("[DB] ✓ Database connection successful")
+            return conn
+        except Exception as e:
+            print(f"[DB ERROR] Failed to connect via DATABASE_URL: {e}")
+            raise
+    
+    # Fallback for local dev only
+    print(f"[DB] WARNING: No DATABASE_URL found. Attempting localhost fallback...")
+    try:
+        conn = psycopg2.connect(
+            host=os.getenv("DB_HOST", "localhost"),
+            port=int(os.getenv("DB_PORT", "5432")),
+            database=os.getenv("DB_NAME", "postgres"),
+            user=os.getenv("DB_USER", "postgres"),
+            password=os.getenv("DB_PASS", "Admin@123")
+        )
+        print("[DB] ✓ Localhost connection successful (local dev mode)")
+        return conn
+    except Exception as e:
+        print(f"[DB ERROR] Failed to connect to localhost: {e}")
+        raise
 
 
 def cleanup_old_records():

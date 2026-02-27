@@ -56,8 +56,10 @@ def run_scheduler():
         print("[STARTUP] Running initial data fetch...")
         run_india_update()
         cleanup_old_records()
+        print("[STARTUP] ✓ Initial data fetch completed")
     except Exception as e:
         print(f"[ERROR] Startup scheduler failed: {e}")
+        print("[INFO] Scheduler will retry at next scheduled time")
     
     # IST timezone
     ist = pytz.timezone('Asia/Kolkata')
@@ -71,19 +73,31 @@ def run_scheduler():
             # Execute at 12:20 AM
             if current_time == "00:20" and last_execute_time != "00:20":
                 print(f"[{current_time} IST] Fetching India AQI data...")
-                run_india_update()
+                try:
+                    run_india_update()
+                    print(f"[{current_time} IST] ✓ Data fetch completed")
+                except Exception as e:
+                    print(f"[{current_time} IST] ✗ Error: {e}")
                 last_execute_time = "00:20"
             
             # Execute at 12:20 PM  
             elif current_time == "12:20" and last_execute_time != "12:20":
                 print(f"[{current_time} IST] Fetching India AQI data...")
-                run_india_update()
+                try:
+                    run_india_update()
+                    print(f"[{current_time} IST] ✓ Data fetch completed")
+                except Exception as e:
+                    print(f"[{current_time} IST] ✗ Error: {e}")
                 last_execute_time = "12:20"
             
             # Execute at 12:00 AM (midnight)
             elif current_time == "00:00" and last_execute_time != "00:00":
                 print(f"[{current_time} IST] Cleaning up old records...")
-                cleanup_old_records()
+                try:
+                    cleanup_old_records()
+                    print(f"[{current_time} IST] ✓ Cleanup completed")
+                except Exception as e:
+                    print(f"[{current_time} IST] ✗ Error: {e}")
                 last_execute_time = "00:00"
             
             # Check every 30 seconds
