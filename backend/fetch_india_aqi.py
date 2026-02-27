@@ -10,11 +10,11 @@ from aqi_utils import compute_aqi_for_row
 load_dotenv()
 
 OPENWEATHER_KEY = os.getenv("OWM_API_KEY")
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "postgres")
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASS = os.getenv("DB_PASS", "")
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Fallback for local dev (if DATABASE_URL not available)
+if not DATABASE_URL:
+    DATABASE_URL = f"postgresql://{os.getenv('DB_USER', 'postgres')}:{os.getenv('DB_PASS', '')}@{os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'postgres')}"
 
 if not OPENWEATHER_KEY:
     raise RuntimeError("OWM_API_KEY not found in .env")
@@ -30,10 +30,7 @@ def frange(start, stop, step):
         v += step
 
 def get_conn():
-    return psycopg2.connect(
-        host=DB_HOST, port=DB_PORT, database=DB_NAME,
-        user=DB_USER, password=DB_PASS
-    )
+    return psycopg2.connect(DATABASE_URL)
 
 def save_row(row):
     conn = get_conn()
