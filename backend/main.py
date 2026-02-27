@@ -37,34 +37,67 @@ app.add_middleware(
 # SCHEDULER (Background Thread)
 # ============================================================
 def run_scheduler():
-    """Run scheduler in background thread (fixed times: 11:45 AM & 11:45 PM IST)"""
+    """Run scheduler in background thread (fixed times: 12:20 AM & 12:20 PM IST)"""
+    import pytz
+    from datetime import datetime, timezone, timedelta
+    
     print("="*60)
-    print("India AQI scheduler started (11:45 AM & 11:45 PM IST)")
+    print("India AQI scheduler started (12:20 AM & 12:20 PM IST)")
     print("="*60)
     print(f"Current server time (UTC): {datetime.utcnow()}")
     print("Scheduled tasks:")
-    print("  - 11:45 AM IST (06:15 UTC) → Fetch AQI data")
-    print("  - 11:45 PM IST (18:15 UTC) → Fetch AQI data")
-    print("  - 12:00 AM IST (18:30 UTC) → Cleanup old records (>30 days)")
+    print("  - 12:20 AM IST → Fetch AQI data")
+    print("  - 12:20 PM IST → Fetch AQI data")
+    print("  - 12:00 AM IST → Cleanup old records (>30 days)")
     print("="*60)
     
-    run_india_update()       # run once immediately at startup
-    cleanup_old_records()    # clean stale data at startup too
+    # Run once at startup
+    try:
+        print("[STARTUP] Running initial data fetch...")
+        run_india_update()
+        cleanup_old_records()
+    except Exception as e:
+        print(f"[ERROR] Startup scheduler failed: {e}")
     
-    # Schedule at fixed times (IST to UTC conversion)
-    schedule.every().day.at("06:15").do(run_india_update)  # 11:45 AM IST
-    schedule.every().day.at("18:15").do(run_india_update)  # 11:45 PM IST
-    schedule.every().day.at("18:30").do(cleanup_old_records)  # 12:00 AM IST
+    # IST timezone
+    ist = pytz.timezone('Asia/Kolkata')
+    last_execute_time = None
     
     while True:
-        schedule.run_pending()
-        time.sleep(1)
+        try:
+            now_ist = datetime.now(ist)
+            current_time = now_ist.strftime("%H:%M")
+            
+            # Execute at 12:20 AM
+            if current_time == "00:20" and last_execute_time != "00:20":
+                print(f"[{current_time} IST] Fetching India AQI data...")
+                run_india_update()
+                last_execute_time = "00:20"
+            
+            # Execute at 12:20 PM  
+            elif current_time == "12:20" and last_execute_time != "12:20":
+                print(f"[{current_time} IST] Fetching India AQI data...")
+                run_india_update()
+                last_execute_time = "12:20"
+            
+            # Execute at 12:00 AM (midnight)
+            elif current_time == "00:00" and last_execute_time != "00:00":
+                print(f"[{current_time} IST] Cleaning up old records...")
+                cleanup_old_records()
+                last_execute_time = "00:00"
+            
+            # Check every 30 seconds
+            time.sleep(30)
+        except Exception as e:
+            print(f"[SCHEDULER ERROR] {e}")
+            time.sleep(60)
 
 @app.on_event("startup")
 async def startup_event():
     """Start scheduler in background thread on app startup"""
     scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
     scheduler_thread.start()
+    print("[APP] Scheduler thread started in background")
 
 HEADERS = {"User-Agent": "AQI-Insight-App"}
 
