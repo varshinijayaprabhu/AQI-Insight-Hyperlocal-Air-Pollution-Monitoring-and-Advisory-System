@@ -37,14 +37,14 @@ app.add_middleware(
 # SCHEDULER (Background Thread)
 # ============================================================
 def run_scheduler():
-    """Run scheduler in background thread (fixed times: 11:35 AM & 11:35 PM IST)"""
+    """Run scheduler in background thread (fixed times: 11:45 AM & 11:45 PM IST)"""
     print("="*60)
-    print("India AQI scheduler started (11:35 AM & 11:35 PM IST)")
+    print("India AQI scheduler started (11:45 AM & 11:45 PM IST)")
     print("="*60)
     print(f"Current server time (UTC): {datetime.utcnow()}")
     print("Scheduled tasks:")
-    print("  - 11:35 AM IST (06:05 UTC) → Fetch AQI data")
-    print("  - 11:35 PM IST (18:05 UTC) → Fetch AQI data")
+    print("  - 11:45 AM IST (06:15 UTC) → Fetch AQI data")
+    print("  - 11:45 PM IST (18:15 UTC) → Fetch AQI data")
     print("  - 12:00 AM IST (18:30 UTC) → Cleanup old records (>30 days)")
     print("="*60)
     
@@ -52,8 +52,8 @@ def run_scheduler():
     cleanup_old_records()    # clean stale data at startup too
     
     # Schedule at fixed times (IST to UTC conversion)
-    schedule.every().day.at("06:05").do(run_india_update)  # 11:35 AM IST
-    schedule.every().day.at("18:05").do(run_india_update)  # 11:35 PM IST
+    schedule.every().day.at("06:15").do(run_india_update)  # 11:45 AM IST
+    schedule.every().day.at("18:15").do(run_india_update)  # 11:45 PM IST
     schedule.every().day.at("18:30").do(cleanup_old_records)  # 12:00 AM IST
     
     while True:
