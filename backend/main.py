@@ -37,17 +37,17 @@ app.add_middleware(
 # SCHEDULER (Background Thread)
 # ============================================================
 def run_scheduler():
-    """Run scheduler in background thread (fixed times: 12:20 AM & 12:20 PM IST)"""
+    """Run scheduler in background thread (fixed times: 12:35 AM & 12:35 PM IST)"""
     import pytz
     from datetime import datetime, timezone, timedelta
     
     print("="*60)
-    print("India AQI scheduler started (12:20 AM & 12:20 PM IST)")
+    print("India AQI scheduler started (12:35 AM & 12:35 PM IST)")
     print("="*60)
     print(f"Current server time (UTC): {datetime.utcnow()}")
     print("Scheduled tasks:")
-    print("  - 12:20 AM IST → Fetch AQI data")
-    print("  - 12:20 PM IST → Fetch AQI data")
+    print("  - 12:35 AM IST → Fetch AQI data")
+    print("  - 12:35 PM IST → Fetch AQI data")
     print("  - 12:00 AM IST → Cleanup old records (>30 days)")
     print("="*60)
     
@@ -70,25 +70,25 @@ def run_scheduler():
             now_ist = datetime.now(ist)
             current_time = now_ist.strftime("%H:%M")
             
-            # Execute at 12:20 AM
-            if current_time == "00:20" and last_execute_time != "00:20":
+            # Execute at 12:35 AM
+            if current_time == "00:35" and last_execute_time != "00:35":
                 print(f"[{current_time} IST] Fetching India AQI data...")
                 try:
                     run_india_update()
                     print(f"[{current_time} IST] ✓ Data fetch completed")
                 except Exception as e:
                     print(f"[{current_time} IST] ✗ Error: {e}")
-                last_execute_time = "00:20"
+                last_execute_time = "00:35"
             
-            # Execute at 12:20 PM  
-            elif current_time == "12:20" and last_execute_time != "12:20":
+            # Execute at 12:35 PM  
+            elif current_time == "12:35" and last_execute_time != "12:35":
                 print(f"[{current_time} IST] Fetching India AQI data...")
                 try:
                     run_india_update()
                     print(f"[{current_time} IST] ✓ Data fetch completed")
                 except Exception as e:
                     print(f"[{current_time} IST] ✗ Error: {e}")
-                last_execute_time = "12:20"
+                last_execute_time = "12:35"
             
             # Execute at 12:00 AM (midnight)
             elif current_time == "00:00" and last_execute_time != "00:00":
