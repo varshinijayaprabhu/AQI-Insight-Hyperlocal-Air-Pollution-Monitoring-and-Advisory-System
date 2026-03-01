@@ -1712,6 +1712,7 @@ export default function App() {
               padding: isMobile ? "16px 12px" : "24px 20px",
               background: "transparent",
               display: "flex",
+              justifyContent: "center",
               alignItems: "center",
               gap: isMobile ? 10 : 14,
             }}
