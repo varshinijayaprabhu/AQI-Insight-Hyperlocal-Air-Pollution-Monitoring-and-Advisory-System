@@ -1148,23 +1148,29 @@ export default function HistoryAnalytics({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: 12,
+              gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(2, 1fr)",
+              gap: isMobile ? 8 : 12,
               marginBottom: 24,
             }}
           >
             <div
               style={{
                 background: "rgba(99,102,241,0.15)",
-                padding: 12,
+                padding: isMobile ? 8 : 12,
                 borderRadius: 10,
                 textAlign: "center",
                 border: "1px solid rgba(99,102,241,0.3)",
               }}
             >
-              <div style={{ fontSize: 10, opacity: 0.7 }}>Mean AQI</div>
+              <div style={{ fontSize: isMobile ? 9 : 10, opacity: 0.7 }}>
+                Mean AQI
+              </div>
               <div
-                style={{ fontSize: 20, fontWeight: "bold", color: "#818CF8" }}
+                style={{
+                  fontSize: isMobile ? 18 : 20,
+                  fontWeight: "bold",
+                  color: "#818CF8",
+                }}
               >
                 {summary.stats.aqi?.mean?.toFixed(0) || "N/A"}
               </div>
@@ -1172,15 +1178,21 @@ export default function HistoryAnalytics({
             <div
               style={{
                 background: "rgba(236,72,153,0.15)",
-                padding: 12,
+                padding: isMobile ? 8 : 12,
                 borderRadius: 10,
                 textAlign: "center",
                 border: "1px solid rgba(236,72,153,0.3)",
               }}
             >
-              <div style={{ fontSize: 10, opacity: 0.7 }}>Max AQI</div>
+              <div style={{ fontSize: isMobile ? 9 : 10, opacity: 0.7 }}>
+                Max AQI
+              </div>
               <div
-                style={{ fontSize: 20, fontWeight: "bold", color: "#F472B6" }}
+                style={{
+                  fontSize: isMobile ? 18 : 20,
+                  fontWeight: "bold",
+                  color: "#F472B6",
+                }}
               >
                 {summary.stats.aqi?.max || "N/A"}
               </div>
@@ -1188,15 +1200,21 @@ export default function HistoryAnalytics({
             <div
               style={{
                 background: "rgba(34,197,94,0.15)",
-                padding: 12,
+                padding: isMobile ? 8 : 12,
                 borderRadius: 10,
                 textAlign: "center",
                 border: "1px solid rgba(34,197,94,0.3)",
               }}
             >
-              <div style={{ fontSize: 10, opacity: 0.7 }}>Avg PM2.5</div>
+              <div style={{ fontSize: isMobile ? 9 : 10, opacity: 0.7 }}>
+                Avg PM2.5
+              </div>
               <div
-                style={{ fontSize: 20, fontWeight: "bold", color: "#4ADE80" }}
+                style={{
+                  fontSize: isMobile ? 18 : 20,
+                  fontWeight: "bold",
+                  color: "#4ADE80",
+                }}
               >
                 {summary.stats.pm25?.mean?.toFixed(1) || "N/A"}
               </div>
@@ -1204,15 +1222,21 @@ export default function HistoryAnalytics({
             <div
               style={{
                 background: "rgba(251,146,60,0.15)",
-                padding: 12,
+                padding: isMobile ? 8 : 12,
                 borderRadius: 10,
                 textAlign: "center",
                 border: "1px solid rgba(251,146,60,0.3)",
               }}
             >
-              <div style={{ fontSize: 10, opacity: 0.7 }}>Avg PM10</div>
+              <div style={{ fontSize: isMobile ? 9 : 10, opacity: 0.7 }}>
+                Avg PM10
+              </div>
               <div
-                style={{ fontSize: 20, fontWeight: "bold", color: "#FB923C" }}
+                style={{
+                  fontSize: isMobile ? 18 : 20,
+                  fontWeight: "bold",
+                  color: "#FB923C",
+                }}
               >
                 {summary.stats.pm10?.mean?.toFixed(1) || "N/A"}
               </div>
@@ -1239,9 +1263,9 @@ export default function HistoryAnalytics({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: 16,
-              marginBottom: 16,
+              gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)",
+              gap: isMobile ? 12 : 16,
+              marginBottom: isMobile ? 12 : 16,
             }}
           >
             <LineChart
@@ -1264,9 +1288,9 @@ export default function HistoryAnalytics({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: 16,
-              marginBottom: 16,
+              gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)",
+              gap: isMobile ? 12 : 16,
+              marginBottom: isMobile ? 12 : 16,
             }}
           >
             <LineChart
@@ -1289,8 +1313,8 @@ export default function HistoryAnalytics({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: 16,
+              gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)",
+              gap: isMobile ? 12 : 16,
             }}
           >
             <LineChart
@@ -1591,12 +1615,14 @@ function FuturePrediction({ series, summary }) {
     },
   ];
 
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
   return (
     <div style={{ marginTop: 20 }}>
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
           gap: 12,
           alignItems: "start",
         }}
@@ -1648,7 +1674,7 @@ function FuturePrediction({ series, summary }) {
             <h3
               style={{
                 margin: "0 0 6px 0",
-                fontSize: 20,
+                fontSize: isMobile ? 16 : 20,
                 fontWeight: "bold",
                 background: "linear-gradient(90deg, #38BDF8 0%, #0EA5E9 100%)",
                 WebkitBackgroundClip: "text",
@@ -1833,7 +1859,7 @@ function FuturePrediction({ series, summary }) {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "2.8fr 1fr",
+                gridTemplateColumns: isMobile ? "1fr" : "2.8fr 1fr",
                 gap: 6,
                 alignItems: "center",
               }}
@@ -1879,7 +1905,7 @@ function FuturePrediction({ series, summary }) {
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "flex-end",
+                  justifyContent: isMobile ? "center" : "flex-end",
                   alignItems: "center",
                   padding: 4,
                 }}
@@ -1888,8 +1914,8 @@ function FuturePrediction({ series, summary }) {
                   src={forecast.peng}
                   alt="Penguin status"
                   style={{
-                    width: "140px",
-                    height: "140px",
+                    width: isMobile ? "100px" : "140px",
+                    height: isMobile ? "100px" : "140px",
                     objectFit: "contain",
                     borderRadius: 8,
                   }}
