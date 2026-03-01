@@ -12,6 +12,10 @@ import pengDead from "./assets/peng_dead.gif";
 /* ====== CONTACT GIF ====== */
 import contactGif from "./assets/contact.gif";
 
+/* ====== API BASE URL WITH FALLBACK ====== */
+const API_BASE =
+  import.meta.env.VITE_API_BASE || "https://aqi-backend.onrender.com";
+
 // Contact Card Component
 function ContactCard() {
   const [showDetails, setShowDetails] = React.useState(false);
@@ -1019,13 +1023,13 @@ export default function HistoryAnalytics({
       try {
         const [tsRes, dailyRes, sumRes] = await Promise.all([
           fetch(
-            `${import.meta.env.VITE_API_BASE}/aqi/history/timeseries?lat=${lat}&lon=${lon}&days=${days}&rolling_window=${rolling_window}&radius_km=${radius_km}`,
+            `${API_BASE}/aqi/history/timeseries?lat=${lat}&lon=${lon}&days=${days}&rolling_window=${rolling_window}&radius_km=${radius_km}`,
           ),
           fetch(
-            `${import.meta.env.VITE_API_BASE}/aqi/history/daily?lat=${lat}&lon=${lon}&days=${days}&radius_km=${radius_km}`,
+            `${API_BASE}/aqi/history/daily?lat=${lat}&lon=${lon}&days=${days}&radius_km=${radius_km}`,
           ),
           fetch(
-            `${import.meta.env.VITE_API_BASE}/aqi/history/summary?lat=${lat}&lon=${lon}&days=${days}&radius_km=${radius_km}`,
+            `${API_BASE}/aqi/history/summary?lat=${lat}&lon=${lon}&days=${days}&radius_km=${radius_km}`,
           ),
         ]);
 
