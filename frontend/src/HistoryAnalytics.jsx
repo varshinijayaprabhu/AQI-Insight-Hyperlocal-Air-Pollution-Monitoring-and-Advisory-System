@@ -2087,33 +2087,33 @@ function FuturePrediction({ series, summary, currentAqi }) {
               </div>
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  gap: 4,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
                 }}
               >
                 {[
-                  { label: "Good (≤50)", color: "#4ADE80" },
-                  { label: "Moderate (51-100)", color: "#FCD34D" },
-                  { label: "USG (101-150)", color: "#FB923C" },
-                  { label: "Unhealthy (151-200)", color: "#F87171" },
-                  { label: "Very Unhealthy (201-300)", color: "#C084FC" },
-                  { label: "Hazardous (>300)", color: "#E11D48" },
+                  { label: "🟢 Good (0-50)", color: "#4ADE80" },
+                  { label: "🟡 Moderate (51-100)", color: "#FCD34D" },
+                  { label: "🟠 USG (101-150)", color: "#FB923C" },
+                  { label: "🔴 Unhealthy (151-200)", color: "#F87171" },
+                  { label: "🟣 Very Unhealthy (201-300)", color: "#C084FC" },
+                  { label: "🔴 Hazardous (>300)", color: "#E11D48" },
                 ].map((item, i) => (
                   <div
                     key={i}
-                    style={{ display: "flex", alignItems: "center", gap: 3 }}
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
                   >
                     <div
                       style={{
-                        width: 10,
-                        height: 10,
+                        width: 12,
+                        height: 12,
                         background: item.color,
                         borderRadius: 2,
                       }}
                     />
                     <div
-                      style={{ fontSize: 10, color: "rgba(255,255,255,0.8)" }}
+                      style={{ fontSize: 11, color: "rgba(255,255,255,0.85)" }}
                     >
                       {item.label}
                     </div>
