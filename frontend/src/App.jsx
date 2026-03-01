@@ -119,6 +119,11 @@ html, body {
   width: 100%;
   overflow-x: hidden;
 }
+@media (max-width: 640px) {
+  .leaflet-control-zoom { display: none; }
+  .leaflet-control-attribution { font-size: 9px; }
+  input, button { font-size: 16px !important; }
+}
 @keyframes flowGradient {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -521,6 +526,23 @@ function AnimatedAqiBar({ aqi }) {
 }
 
 /* =========================
+   RESPONSIVE HOOK
+   ========================= */
+function useWindowSize() {
+  const [size, setSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+  useEffect(() => {
+    const handler = () =>
+      setSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+  return size;
+}
+
+/* =========================
    MAIN APP (AQI CARD section starts here)
    Note: only change is gauge removal — rest is same.
    Replace the gauge container's content to show AnimatedAqiBar.
@@ -528,6 +550,8 @@ function AnimatedAqiBar({ aqi }) {
 
 export default function App() {
   const panelRef = useRef(null);
+  const { width: winW } = useWindowSize();
+  const isMobile = winW < 640;
   const [mapTheme, setMapTheme] = useState("satellite");
   const [searchText, setSearchText] = useState("");
   const [markerPos, setMarkerPos] = useState(null);
@@ -539,6 +563,7 @@ export default function App() {
   const [showNews, setShowNews] = useState(false);
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
   const [showFeaturesPanel, setShowFeaturesPanel] = useState(false);
+  const [showMobilePanel, setShowMobilePanel] = useState(false);
 
   const featureList = [
     {
@@ -794,7 +819,7 @@ export default function App() {
       <div
         style={{
           position: "static",
-          width: 350,
+          width: "min(350px, calc(100vw - 20px))",
           borderRadius: 14,
           background: "rgba(10,12,16,0.96)",
           color: "white",
@@ -1306,224 +1331,307 @@ export default function App() {
             style={{
               position: "relative",
               width: "100%",
-              height: isMapFullscreen ? "100vh" : "60vh",
-              minHeight: isMapFullscreen ? "100vh" : "500px",
+              height: isMapFullscreen ? "100vh" : isMobile ? "55vh" : "60vh",
+              minHeight: isMapFullscreen
+                ? "100vh"
+                : isMobile
+                  ? "300px"
+                  : "500px",
               overflow: "hidden",
               transition: "height 0.3s ease",
               border: "none",
               outline: "none",
             }}
           >
-            {/* FLOATING PANEL - FIXED WITHIN MAP BANNER */}
-            <div
-              ref={panelRef}
-              style={{
-                position: "absolute",
-                top: 5,
-                right: 18,
-                width: 300,
-                padding: 16,
-                zIndex: 9999,
-                borderRadius: 20,
-                background: "rgba(20,20,28,0.94)",
-                backdropFilter: "blur(12px)",
-                boxShadow: "0 12px 30px rgba(0,0,0,0.45)",
-                display: "flex",
-                flexDirection: "column",
-                gap: 12,
-                alignItems: "center",
-              }}
-            >
-              {/* Banner */}
-              <div
-                style={{
-                  width: "100%",
-                  height: 140,
-                  overflow: "hidden",
-                  borderRadius: 12,
-                  background: "rgba(255,255,255,0.04)",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <img
-                  src={searchGif}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    objectPosition: "center",
-                    animation: "floatInAir 3s ease-in-out infinite",
-                  }}
-                />
-              </div>
-
-              {/* SEARCH */}
-              <div style={{ width: "100%", position: "relative" }}>
-                <span
-                  style={{
-                    position: "absolute",
-                    left: 10,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    fontSize: 18,
-                  }}
-                >
-                  🔍
-                </span>
-
-                <input
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  placeholder={isSearching ? "Searching…" : "Search place…"}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  style={{
-                    width: "100%",
-                    padding: "10px 40px 10px 36px",
-                    borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    background: "rgba(22,30,48,0.85)",
-                    color: "white",
-                    outline: "none",
-                    boxSizing: "border-box",
-                  }}
-                />
-
-                <button
-                  onClick={handleCurrentLocationClick}
-                  style={{
-                    position: "absolute",
-                    right: 6,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    padding: "4px 8px",
-                    borderRadius: "50%",
-                    border: "none",
-                    background: "rgba(255,255,255,0.15)",
-                    color: "white",
-                    cursor: "pointer",
-                    fontSize: 16,
-                  }}
-                >
-                  {"\u29BF"}
-                </button>
-              </div>
-
-              {/* BUTTONS */}
-              <div style={{ width: "100%", display: "flex", gap: 10 }}>
-                <button
-                  onClick={handleSearch}
-                  style={{ ...animatedButtonStyle, flex: 1 }}
-                >
-                  {isSearching ? "Searching…" : "Search"}
-                </button>
-
-                <button
-                  onClick={() => {
-                    setHeatmapEnabled((v) => !v);
-                    showMessage(
-                      heatmapEnabled ? "🧊 Heatmap off" : "🔥 Heatmap on",
-                    );
-                  }}
-                  style={{
-                    ...animatedButtonStyle,
-                    flex: 1,
-                    background: heatmapEnabled
-                      ? "linear-gradient(270deg,#9333ea,#3b0764,#9333ea)"
-                      : "linear-gradient(270deg,#3b82f6,#1e40af,#3b82f6)",
-                  }}
-                >
-                  {heatmapEnabled ? "Hide" : "Heatmap"}
-                </button>
-
-                {/* NEWS BUTTON */}
-                <button
-                  onClick={() => setShowNews(true)}
-                  style={{
-                    ...animatedButtonStyle,
-                    flex: 1,
-                    background:
-                      "linear-gradient(270deg,#9333ea,#3b0764,#9333ea)",
-                  }}
-                >
-                  News
-                </button>
-              </div>
-
-              {/* THEME PICKER */}
-              <ThemePicker />
-
-              {/* FULLSCREEN TOGGLE BUTTON */}
+            {/* MOBILE: ☰ TOGGLE BUTTON */}
+            {isMobile && !showMobilePanel && (
               <button
-                onClick={() => setIsMapFullscreen(!isMapFullscreen)}
+                onClick={() => setShowMobilePanel(true)}
                 style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  background: isMapFullscreen
-                    ? "linear-gradient(270deg,#dc2626,#991b1b,#dc2626)"
-                    : "linear-gradient(270deg,#2563eb,#1e3a8a,#2563eb)",
-                  backgroundSize: "600% 600%",
-                  animation: "flowGradient 6s ease infinite",
-                  color: "white",
-                  border: "1px solid rgba(255,255,255,0.15)",
+                  position: "absolute",
+                  top: 12,
+                  right: 12,
+                  zIndex: 9999,
+                  width: 44,
+                  height: 44,
                   borderRadius: 12,
+                  background: "rgba(20,20,28,0.9)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  color: "white",
+                  fontSize: 20,
                   cursor: "pointer",
-                  fontWeight: 600,
-                  fontSize: 14,
-                  boxShadow: "0 8px 20px rgba(0,0,0,0.3)",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "scale(1.02)";
-                  e.currentTarget.style.boxShadow =
-                    "0 10px 25px rgba(0,0,0,0.4)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "scale(1)";
-                  e.currentTarget.style.boxShadow =
-                    "0 8px 20px rgba(0,0,0,0.3)";
+                  backdropFilter: "blur(10px)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
                 }}
               >
-                {isMapFullscreen ? "⬇ Exit Fullscreen" : "⬆ Fullscreen Map"}
+                ☰
               </button>
+            )}
 
-              {/* MESSAGE POPUP - BELOW SEARCH CARD */}
-              {message && (
+            {/* FLOATING PANEL - FIXED WITHIN MAP BANNER (desktop), FULL-SCREEN OVERLAY (mobile) */}
+            {(!isMobile || showMobilePanel) && (
+              <div
+                ref={panelRef}
+                style={
+                  isMobile
+                    ? {
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        width: "100%",
+                        padding: "16px 20px",
+                        zIndex: 99999,
+                        borderRadius: 0,
+                        background: "rgba(10,12,18,0.97)",
+                        backdropFilter: "blur(16px)",
+                        boxShadow: "none",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 12,
+                        alignItems: "center",
+                        overflowY: "auto",
+                      }
+                    : {
+                        position: "absolute",
+                        top: 5,
+                        right: 18,
+                        width: 300,
+                        padding: 16,
+                        zIndex: 9999,
+                        borderRadius: 20,
+                        background: "rgba(20,20,28,0.94)",
+                        backdropFilter: "blur(12px)",
+                        boxShadow: "0 12px 30px rgba(0,0,0,0.45)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 12,
+                        alignItems: "center",
+                      }
+                }
+              >
+                {/* Mobile close button */}
+                {isMobile && (
+                  <button
+                    onClick={() => setShowMobilePanel(false)}
+                    style={{
+                      alignSelf: "flex-end",
+                      background: "rgba(255,255,255,0.1)",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                      color: "white",
+                      borderRadius: 10,
+                      padding: "6px 16px",
+                      cursor: "pointer",
+                      fontWeight: 700,
+                      fontSize: 14,
+                      marginBottom: 4,
+                    }}
+                  >
+                    ✕ Close
+                  </button>
+                )}
+                {/* Banner */}
                 <div
                   style={{
-                    marginTop: 2,
                     width: "100%",
-                    borderRadius: 10,
-                    background: "rgba(20,20,28,0.85)",
-                    color: "white",
-                    boxShadow: "0 8px 20px rgba(0,0,0,0.4)",
-                    padding: "6px 10px",
+                    height: 140,
+                    overflow: "hidden",
+                    borderRadius: 12,
+                    background: "rgba(255,255,255,0.04)",
                     display: "flex",
-                    gap: 6,
-                    alignItems: "center",
                     justifyContent: "center",
-                    border: "2px solid rgba(99, 102, 241, 0.5)",
-                    backdropFilter: "blur(10px)",
+                    alignItems: "center",
                   }}
                 >
                   <img
-                    src={msgGif}
-                    style={{ width: 28, height: 28, borderRadius: 6 }}
+                    src={searchGif}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center",
+                      animation: "floatInAir 3s ease-in-out infinite",
+                    }}
                   />
-                  <div style={{ fontSize: 12, fontWeight: "500" }}>
-                    {message}
-                  </div>
                 </div>
-              )}
-            </div>
 
-            {/* AQI CARD - WITHIN MAP BANNER */}
-            <div
-              style={{ position: "absolute", left: 0, bottom: 0, zIndex: 9990 }}
-            >
-              <AQICard data={aqiData} />
-            </div>
+                {/* SEARCH */}
+                <div style={{ width: "100%", position: "relative" }}>
+                  <span
+                    style={{
+                      position: "absolute",
+                      left: 10,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      fontSize: 18,
+                    }}
+                  >
+                    🔍
+                  </span>
+
+                  <input
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    placeholder={isSearching ? "Searching…" : "Search place…"}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    style={{
+                      width: "100%",
+                      padding: "10px 40px 10px 36px",
+                      borderRadius: 12,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(22,30,48,0.85)",
+                      color: "white",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+
+                  <button
+                    onClick={handleCurrentLocationClick}
+                    style={{
+                      position: "absolute",
+                      right: 6,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      padding: "4px 8px",
+                      borderRadius: "50%",
+                      border: "none",
+                      background: "rgba(255,255,255,0.15)",
+                      color: "white",
+                      cursor: "pointer",
+                      fontSize: 16,
+                    }}
+                  >
+                    {"\u29BF"}
+                  </button>
+                </div>
+
+                {/* BUTTONS */}
+                <div style={{ width: "100%", display: "flex", gap: 10 }}>
+                  <button
+                    onClick={handleSearch}
+                    style={{ ...animatedButtonStyle, flex: 1 }}
+                  >
+                    {isSearching ? "Searching…" : "Search"}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setHeatmapEnabled((v) => !v);
+                      showMessage(
+                        heatmapEnabled ? "🧊 Heatmap off" : "🔥 Heatmap on",
+                      );
+                    }}
+                    style={{
+                      ...animatedButtonStyle,
+                      flex: 1,
+                      background: heatmapEnabled
+                        ? "linear-gradient(270deg,#9333ea,#3b0764,#9333ea)"
+                        : "linear-gradient(270deg,#3b82f6,#1e40af,#3b82f6)",
+                    }}
+                  >
+                    {heatmapEnabled ? "Hide" : "Heatmap"}
+                  </button>
+
+                  {/* NEWS BUTTON */}
+                  <button
+                    onClick={() => setShowNews(true)}
+                    style={{
+                      ...animatedButtonStyle,
+                      flex: 1,
+                      background:
+                        "linear-gradient(270deg,#9333ea,#3b0764,#9333ea)",
+                    }}
+                  >
+                    News
+                  </button>
+                </div>
+
+                {/* THEME PICKER */}
+                <ThemePicker />
+
+                {/* FULLSCREEN TOGGLE BUTTON */}
+                <button
+                  onClick={() => setIsMapFullscreen(!isMapFullscreen)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    background: isMapFullscreen
+                      ? "linear-gradient(270deg,#dc2626,#991b1b,#dc2626)"
+                      : "linear-gradient(270deg,#2563eb,#1e3a8a,#2563eb)",
+                    backgroundSize: "600% 600%",
+                    animation: "flowGradient 6s ease infinite",
+                    color: "white",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: 12,
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    fontSize: 14,
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.3)",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "scale(1.02)";
+                    e.currentTarget.style.boxShadow =
+                      "0 10px 25px rgba(0,0,0,0.4)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "scale(1)";
+                    e.currentTarget.style.boxShadow =
+                      "0 8px 20px rgba(0,0,0,0.3)";
+                  }}
+                >
+                  {isMapFullscreen ? "⬇ Exit Fullscreen" : "⬆ Fullscreen Map"}
+                </button>
+
+                {/* MESSAGE POPUP - BELOW SEARCH CARD */}
+                {message && (
+                  <div
+                    style={{
+                      marginTop: 2,
+                      width: "100%",
+                      borderRadius: 10,
+                      background: "rgba(20,20,28,0.85)",
+                      color: "white",
+                      boxShadow: "0 8px 20px rgba(0,0,0,0.4)",
+                      padding: "6px 10px",
+                      display: "flex",
+                      gap: 6,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: "2px solid rgba(99, 102, 241, 0.5)",
+                      backdropFilter: "blur(10px)",
+                    }}
+                  >
+                    <img
+                      src={msgGif}
+                      style={{ width: 28, height: 28, borderRadius: 6 }}
+                    />
+                    <div style={{ fontSize: 12, fontWeight: "500" }}>
+                      {message}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* AQI CARD - WITHIN MAP BANNER (desktop only) */}
+            {!isMobile && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  bottom: 0,
+                  zIndex: 9990,
+                }}
+              >
+                <AQICard data={aqiData} />
+              </div>
+            )}
 
             {/* MAP CONTAINER */}
             <MapContainer
@@ -1559,13 +1667,27 @@ export default function App() {
             </MapContainer>
           </div>
 
+          {/* MOBILE: AQI CARD shown below map */}
+          {isMobile && aqiData && (
+            <div
+              style={{
+                padding: "10px 10px 0",
+                background: "#000",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <AQICard data={aqiData} />
+            </div>
+          )}
+
           {/* ---------- AQI HISTORY ANALYTICS SECTION (Scrollable) ---------- */}
           <div
             style={{
               width: "100%",
               background: "#000",
               backdropFilter: "blur(8px)",
-              padding: "60px 20px 60px",
+              padding: isMobile ? "30px 12px 40px" : "60px 20px 60px",
               boxSizing: "border-box",
               borderTop: "none",
               position: "relative",

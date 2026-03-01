@@ -33,6 +33,7 @@ def get_conn():
     return psycopg2.connect(DATABASE_URL)
 
 def save_row(row):
+    """Single row insert — used only for fallback/individual saves."""
     conn = get_conn()
     cur = conn.cursor()
     query = """
@@ -44,6 +45,25 @@ def save_row(row):
     conn.commit()
     cur.close()
     conn.close()
+
+def save_rows_batch(rows):
+    """Batch insert all rows using a single DB connection — much faster across platforms."""
+    if not rows:
+        return 0
+    query = """
+    INSERT INTO india_aqi(lat, lon, dt, pm25, pm10, no2, so2, o3, co, aqi)
+    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    ON CONFLICT (lat, lon, dt) DO NOTHING;
+    """
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.executemany(query, rows)
+    conn.commit()
+    saved = cur.rowcount if cur.rowcount != -1 else len(rows)
+    cur.close()
+    conn.close()
+    print(f"[DB] Batch inserted {len(rows)} rows in a single connection.")
+    return saved
 
 def fetch_point(lat, lon):
     url = f"http://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={lon}&appid={OPENWEATHER_KEY}"
@@ -69,18 +89,24 @@ def fetch_point(lat, lon):
 
 def run_india_update():
     print("Starting India update:", datetime.utcnow().isoformat())
-    count = 0
+    rows = []    # collect all rows first
+    errors = 0
+
     for lat in frange(LAT_START, LAT_END, STEP):
         for lon in frange(LON_START, LON_END, STEP):
             try:
                 row = fetch_point(lat, lon)
-                save_row(row)
-                count += 1
-                print(f"Saved {lat},{lon}")
+                rows.append(row)
+                print(f"Fetched {lat},{lon}")
             except Exception as e:
                 print("Error at", lat, lon, "->", e)
-            time.sleep(1)  # safe spacing
-    print("Finished. Total saved:", count)
+                errors += 1
+            time.sleep(1)  # safe spacing for API rate limits
+
+    # One single DB connection for all rows
+    print(f"Fetch complete. {len(rows)} rows fetched, {errors} errors. Saving to DB...")
+    save_rows_batch(rows)
+    print(f"Finished. Total saved: {len(rows)}")
 
 
 # -------------------------------------------------------------------

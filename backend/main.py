@@ -51,16 +51,6 @@ def run_scheduler():
     print("  - 12:00 AM IST → Cleanup old records (>30 days)")
     print("="*60)
     
-    # Run once at startup
-    try:
-        print("[STARTUP] Running initial data fetch...")
-        run_india_update()
-        cleanup_old_records()
-        print("[STARTUP] ✓ Initial data fetch completed")
-    except Exception as e:
-        print(f"[ERROR] Startup scheduler failed: {e}")
-        print("[INFO] Scheduler will retry at next scheduled time")
-    
     # IST timezone
     ist = pytz.timezone('Asia/Kolkata')
     last_execute_time = None
