@@ -996,6 +996,7 @@ export default function HistoryAnalytics({
   days = 30,
   rolling_window = 5,
   radius_km = 10, // 10km radius for more specific location data
+  currentAqi = null, // Current live AQI from main app
 }) {
   const [loading, setLoading] = useState(false);
   const [series, setSeries] = useState([]);
@@ -1393,14 +1394,14 @@ export default function HistoryAnalytics({
         </div>
 
         {/* Future Predictions Section */}
-        <FuturePrediction series={series} summary={summary} />
+        <FuturePrediction series={series} summary={summary} currentAqi={currentAqi} />
       </div>
     </div>
   );
 }
 
 // Future Prediction Component
-function FuturePrediction({ series, summary }) {
+function FuturePrediction({ series, summary, currentAqi }) {
   if (!series || series.length < 5 || !summary) {
     return null;
   }
@@ -1417,7 +1418,8 @@ function FuturePrediction({ series, summary }) {
     totalChange += aqiValues[i] - aqiValues[i - 1];
   }
   const avgChange = totalChange / (aqiValues.length - 1);
-  const currentAQI = aqiValues[aqiValues.length - 1];
+  // Use live current AQI if provided, otherwise use last historical value
+  const currentAQI = currentAqi !== null && currentAqi !== undefined ? currentAqi : aqiValues[aqiValues.length - 1];
   const predictedAQI = Math.max(0, currentAQI + avgChange * 3); // Predict 3 steps ahead
 
   // Determine trend direction

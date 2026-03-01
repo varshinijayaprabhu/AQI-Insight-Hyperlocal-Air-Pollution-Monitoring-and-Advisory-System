@@ -1725,6 +1725,7 @@ export default function App() {
                   lon={markerPos ? markerPos[1] : aqiData.longitude}
                   days={30}
                   rolling_window={5}
+                  currentAqi={aqiData?.aqi}
                 />
               ) : (
                 <>
@@ -1742,6 +1743,7 @@ export default function App() {
                     lon={78.9629}
                     days={30}
                     rolling_window={5}
+                    currentAqi={null}
                   />
                 </>
               )}
