@@ -1394,7 +1394,11 @@ export default function HistoryAnalytics({
         </div>
 
         {/* Future Predictions Section */}
-        <FuturePrediction series={series} summary={summary} currentAqi={currentAqi} />
+        <FuturePrediction
+          series={series}
+          summary={summary}
+          currentAqi={currentAqi}
+        />
       </div>
     </div>
   );
@@ -1419,7 +1423,10 @@ function FuturePrediction({ series, summary, currentAqi }) {
   }
   const avgChange = totalChange / (aqiValues.length - 1);
   // Use live current AQI if provided, otherwise use last historical value
-  const currentAQI = currentAqi !== null && currentAqi !== undefined ? currentAqi : aqiValues[aqiValues.length - 1];
+  const currentAQI =
+    currentAqi !== null && currentAqi !== undefined
+      ? currentAqi
+      : aqiValues[aqiValues.length - 1];
   const predictedAQI = Math.max(0, currentAQI + avgChange * 3); // Predict 3 steps ahead
 
   // Determine trend direction
@@ -2086,9 +2093,12 @@ function FuturePrediction({ series, summary, currentAqi }) {
                 }}
               >
                 {[
-                  { label: "Good", color: "#4ADE80" },
-                  { label: "Moderate", color: "#FCD34D" },
-                  { label: "Unhealthy", color: "#F87171" },
+                  { label: "Good (≤50)", color: "#4ADE80" },
+                  { label: "Moderate (51-100)", color: "#FCD34D" },
+                  { label: "USG (101-150)", color: "#FB923C" },
+                  { label: "Unhealthy (151-200)", color: "#F87171" },
+                  { label: "Very Unhealthy (201-300)", color: "#C084FC" },
+                  { label: "Hazardous (>300)", color: "#E11D48" },
                 ].map((item, i) => (
                   <div
                     key={i}
@@ -2103,7 +2113,7 @@ function FuturePrediction({ series, summary, currentAqi }) {
                       }}
                     />
                     <div
-                      style={{ fontSize: 11, color: "rgba(255,255,255,0.8)" }}
+                      style={{ fontSize: 10, color: "rgba(255,255,255,0.8)" }}
                     >
                       {item.label}
                     </div>
