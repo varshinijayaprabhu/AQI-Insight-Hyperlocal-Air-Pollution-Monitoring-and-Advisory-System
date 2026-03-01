@@ -1003,6 +1003,7 @@ export default function HistoryAnalytics({
   const [summary, setSummary] = useState(null);
   const [dataSource, setDataSource] = useState("");
   const [error, setError] = useState(null);
+  const isMobile = window.innerWidth < 768;
 
   // Validate inputs
   if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
