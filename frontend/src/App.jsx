@@ -1710,9 +1710,7 @@ export default function App() {
             style={{
               width: "100%",
               padding: isMobile ? "16px 12px" : "24px 20px",
-              background: "rgba(10,10,15,0.6)",
-              backdropFilter: "blur(8px)",
-              borderTop: "1px solid rgba(255,255,255,0.1)",
+              background: "transparent",
               display: "flex",
               alignItems: "center",
               gap: isMobile ? 10 : 14,
@@ -1731,10 +1729,11 @@ export default function App() {
             <h2
               style={{
                 color: "white",
-                fontSize: isMobile ? 16 : 20,
-                fontWeight: 700,
+                fontSize: 30,
+                fontFamily: "'Cooper Black', cursive, sans-serif",
+                fontWeight: 900,
                 margin: 0,
-                letterSpacing: 0.5,
+                letterSpacing: 1,
               }}
             >
               AQI-Insight
