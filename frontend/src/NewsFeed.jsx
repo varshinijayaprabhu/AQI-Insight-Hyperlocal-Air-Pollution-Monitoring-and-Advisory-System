@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "https://aqi-backend.onrender.com";
+const API_BASE =
+  import.meta.env.VITE_API_BASE || "https://aqi-backend.onrender.com";
 
 const NewsFeed = () => {
   const [articles, setArticles] = useState([]);
@@ -194,7 +195,7 @@ const NewsFeed = () => {
                     src={a.image}
                     alt=""
                     onError={(e) => {
-                      e.target.style.display = 'none';
+                      e.target.style.display = "none";
                     }}
                     style={{
                       width: "100%",
