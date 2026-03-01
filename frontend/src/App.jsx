@@ -1349,6 +1349,41 @@ export default function App() {
             background: "#000",
           }}
         >
+          {/* HEADER WITH LOGO */}
+          <div
+            style={{
+              padding: isMobile ? "10px 16px" : "16px 24px",
+              background: "rgba(10,10,15,0.85)",
+              backdropFilter: "blur(10px)",
+              borderBottom: "1px solid rgba(255,255,255,0.1)",
+              display: "flex",
+              alignItems: "center",
+              gap: isMobile ? 8 : 12,
+            }}
+          >
+            <img
+              src="/logo.png"
+              alt="AQI-Insight Logo"
+              style={{
+                width: isMobile ? 36 : 48,
+                height: isMobile ? 36 : 48,
+                borderRadius: 8,
+                objectFit: "contain",
+              }}
+            />
+            <h1
+              style={{
+                color: "white",
+                fontSize: isMobile ? 18 : 24,
+                fontWeight: 700,
+                margin: 0,
+                letterSpacing: 1,
+              }}
+            >
+              AQI-Insight
+            </h1>
+          </div>
+
           {/* MAP BANNER - FIXED AT TOP */}
           <div
             style={{
