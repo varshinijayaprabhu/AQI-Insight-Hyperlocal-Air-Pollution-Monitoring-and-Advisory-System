@@ -241,13 +241,14 @@ function SmoothHeatmap({ enabled, onError }) {
       const sw = bounds.getSouthWest();
       const ne = bounds.getNorthEast();
 
-      const url = `${import.meta.env.VITE_API_BASE}/aqi/heatmap/smooth?lat1=${sw.lat}&lon1=${sw.lng}&lat2=${ne.lat}&lon2=${ne.lng}&sample_grid=5&out_res=120`;
+      const url = `${API_BASE}/aqi/heatmap/smooth?lat1=${sw.lat}&lon1=${sw.lng}&lat2=${ne.lat}&lon2=${ne.lng}&sample_grid=5&out_res=120`;
 
       try {
         if (abortRef.current) abortRef.current.abort();
         abortRef.current = new AbortController();
 
         const res = await fetch(url, { signal: abortRef.current.signal });
+        if (!res.ok) throw new Error("Heatmap API failed");
         const json = await res.json();
         const grid = json.grid_aqi;
 
@@ -302,9 +303,8 @@ function ClickFetcher({ onResult }) {
       const { lat, lng } = e.latlng;
 
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_BASE}/aqi/coords?lat=${lat}&lon=${lng}`,
-        );
+        const res = await fetch(`${API_BASE}/aqi/coords?lat=${lat}&lon=${lng}`);
+        if (!res.ok) throw new Error("Click fetch failed");
         const json = await res.json();
 
         onResult({
@@ -526,6 +526,12 @@ function AnimatedAqiBar({ aqi }) {
 }
 
 /* =========================
+   API BASE URL WITH FALLBACK
+   ========================= */
+const API_BASE =
+  import.meta.env.VITE_API_BASE || "https://aqi-backend.onrender.com";
+
+/* =========================
    RESPONSIVE HOOK
    ========================= */
 function useWindowSize() {
@@ -667,13 +673,15 @@ export default function App() {
         const lon = pos.coords.longitude;
         try {
           const res = await fetch(
-            `${import.meta.env.VITE_API_BASE}/aqi/coords?lat=${lat}&lon=${lon}`,
+            `${API_BASE}/aqi/coords?lat=${lat}&lon=${lon}`,
           );
+          if (!res.ok) throw new Error("API failed");
           const json = await res.json();
           setMarkerPos([lat, lon]);
           setAqiData(json);
           showMessage("🎯 Location detected");
-        } catch {
+        } catch (err) {
+          console.error("Geolocation API error:", err);
           loadIndiaDefault();
         }
       },
@@ -694,13 +702,19 @@ export default function App() {
   async function loadIndiaDefault() {
     const lat = 22.5937,
       lon = 78.9629;
-    const res = await fetch(
-      `${import.meta.env.VITE_API_BASE}/aqi/coords?lat=${lat}&lon=${lon}`,
-    );
-    const json = await res.json();
-    setMarkerPos([lat, lon]);
-    setAqiData(json);
-    showMessage("🇮🇳 Showing India AQI (default)");
+    try {
+      const res = await fetch(`${API_BASE}/aqi/coords?lat=${lat}&lon=${lon}`);
+      if (!res.ok) throw new Error("API failed");
+      const json = await res.json();
+      setMarkerPos([lat, lon]);
+      setAqiData(json);
+      showMessage("🇮🇳 Showing India AQI (default)");
+    } catch (err) {
+      console.error("Failed to load default location:", err);
+      showMessage("⚠️ Failed to load data");
+      // Set default marker at least
+      setMarkerPos([lat, lon]);
+    }
   }
 
   /* SEARCH */
@@ -712,16 +726,18 @@ export default function App() {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE}/aqi/location?place=${encodeURIComponent(
+        `${API_BASE}/aqi/location?place=${encodeURIComponent(
           searchText,
         )}&country=India`,
       );
+      if (!res.ok) throw new Error("Search failed");
       const json = await res.json();
 
       setMarkerPos([json.latitude, json.longitude]);
       setAqiData(json);
       showMessage("✅ Search completed");
-    } catch {
+    } catch (err) {
+      console.error("Search error:", err);
       showMessage("❌ Search failed");
     }
 
@@ -735,14 +751,21 @@ export default function App() {
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
 
-        const res = await fetch(
-          `${import.meta.env.VITE_API_BASE}/aqi/coords?lat=${lat}&lon=${lon}`,
-        );
-        const json = await res.json();
+        try {
+          const res = await fetch(
+            `${API_BASE}/aqi/coords?lat=${lat}&lon=${lon}`,
+          );
+          if (!res.ok) throw new Error("API failed");
+          const json = await res.json();
 
-        setMarkerPos([lat, lon]);
-        setAqiData(json);
-        showMessage("📍 Location updated");
+          setMarkerPos([lat, lon]);
+          setAqiData(json);
+          showMessage("📍 Location updated");
+        } catch (err) {
+          console.error("Current location API error:", err);
+          showMessage("⚠️ Failed to fetch location data");
+          setMarkerPos([lat, lon]);
+        }
       },
       () => showMessage("🚫 Location permission denied"),
     );
